@@ -12,10 +12,31 @@ class Nethra {
 
 
         this.prepareTheScreen();
+        this.startLabellingModel();
 
     }
 
-    startLabellingModel() {}
+    async startLabellingModel() {
+        let faceDetections = await this.loadLabledImages();
+        console.log(faceDetections);
+    }
+
+
+    loadLabledImages() {
+        const labels = ["1140", "1141"];
+        return Promise.all(
+            labels.map(async label => {
+                const decriptions = []
+                for (let i = 1; i <= 2; i++) {
+                    const img = await faceapi.fetchImage(`/web/labels/${label}/${i}.jpg`);
+                    const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                    decriptions.push(detections.descriptor)
+                }
+
+                return new faceapi.LabeledFaceDescriptors(label, decriptions)
+            })
+        )
+    }
 
     handleCameraFeed = (stream) => {
         this.videoElem.srcObject = stream;
