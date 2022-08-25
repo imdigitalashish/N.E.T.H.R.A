@@ -14,11 +14,20 @@ class Nethra {
         this.prepareTheScreen();
         this.startLabellingModel();
 
+        this.currentFace = "";
+
     }
 
+    labaledFaceDescriptor = "";
+    faceMatcher = "";
+    faceDetectorReady = false
+
     async startLabellingModel() {
-        let faceDetections = await this.loadLabledImages();
-        console.log(faceDetections);
+        this.labaledFaceDescriptor = await this.loadLabledImages();
+        this.faceMatcher = new faceapi.FaceMatcher(this.labaledFaceDescriptor, 0.6);
+        this.faceDetectorReady = true;
+
+        console.log(this.labaledFaceDescriptor);
     }
 
 
@@ -28,7 +37,7 @@ class Nethra {
             labels.map(async label => {
                 const decriptions = []
                 for (let i = 1; i <= 2; i++) {
-                    const img = await faceapi.fetchImage(`/web/labels/${label}/${i}.jpg`);
+                    const img = await faceapi.fetchImage(`/labels/${label}/${i}.jpg`);
                     const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                     decriptions.push(detections.descriptor)
                 }
@@ -57,6 +66,8 @@ class Nethra {
 
         document.querySelector("#AiFrame").style.display = "inline";
 
+
+
         requestAnimationFrame(this.render.bind(this))
 
     }
@@ -70,8 +81,46 @@ class Nethra {
         frame.style.width = this.canvas.width + 90 + "px";
         frame.style.height = this.canvas.height + 90 + "px";
 
+        if(this.faceDetectorReady) {
+            this.startDetecting();
+        }
+
         this.ctx.drawImage(this.videoElem, 0, 0, this.videoElem.videoWidth, this.videoElem.videoHeight);
+
+
+
         requestAnimationFrame(this.render.bind(this));
+    }
+
+    detectionBox = {
+        x: 0,
+        y: 0,
+        width: 0,
+        heigh: 0,
+    }
+    async startDetecting() {
+        let image = new Image();
+        image.src = this.canvas.toDataURL();
+
+        const detections = await faceapi.detectAllFaces(image).withFaceLandmarks().withFaceDescriptors();
+
+        if (detections.length != 0) {
+            let box = detections[0].detection.box
+            this.detectionBox.x = box._x;
+            this.detectionBox.y = box._y;
+            this.detectionBox.heigh = box._height;
+            this.detectionBox.width = box.width;
+            let result = detections.map(d => this.faceMatcher.findBestMatch(d.descriptor));
+            result = result.toString().split(" ")[0];
+            if (result.toString() != "unknown" && this.currentFace != result.toString()) {
+                console.log(result.toString());
+                this.currentFace = result.toString();
+                eel.addThisFaceToCSV(this.currentFace)(()=>{
+                    
+                })
+            }
+        }
+
     }
 
     prepareTheScreen() {
@@ -97,9 +146,9 @@ class Nethra {
 
 
 async function main() {
-    await faceapi.nets.faceRecognitionNet.loadFromUri('/web/models');
-    await faceapi.nets.faceLandmark68Net.loadFromUri('/web/models');
-    await faceapi.nets.ssdMobilenetv1.loadFromUri('/web/models');
+    await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+    await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+    await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
     window.nethra = new Nethra();
 }
 

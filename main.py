@@ -15,4 +15,9 @@ def returnResponse():
     return "hello World"
 
 
+@eel.expose
+def addThisFaceToCSV(name):
+    print(name)
+    return name
+
 eel.start("index.html", size=screensize)
