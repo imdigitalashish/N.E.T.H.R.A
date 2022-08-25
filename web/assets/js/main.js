@@ -81,12 +81,16 @@ class Nethra {
         frame.style.width = this.canvas.width + 90 + "px";
         frame.style.height = this.canvas.height + 90 + "px";
 
-        if(this.faceDetectorReady) {
+        if (this.faceDetectorReady) {
             this.startDetecting();
         }
 
         this.ctx.drawImage(this.videoElem, 0, 0, this.videoElem.videoWidth, this.videoElem.videoHeight);
-
+        this.ctx.strokeStyle = this.currentFace === "" ? "red" : "blue";
+        this.ctx.lineWidth = 4;
+        this.ctx.beginPath()
+        this.ctx.rect(this.detectionBox.x, this.detectionBox.y, this.detectionBox.width, this.detectionBox.heigh);
+        this.ctx.stroke();
 
 
         requestAnimationFrame(this.render.bind(this));
@@ -112,11 +116,14 @@ class Nethra {
             this.detectionBox.width = box.width;
             let result = detections.map(d => this.faceMatcher.findBestMatch(d.descriptor));
             result = result.toString().split(" ")[0];
+            if(result.toString() === "unknown") {
+                this.currentFace = "";
+            }
             if (result.toString() != "unknown" && this.currentFace != result.toString()) {
                 console.log(result.toString());
                 this.currentFace = result.toString();
-                eel.addThisFaceToCSV(this.currentFace)(()=>{
-                    
+                eel.addThisFaceToCSV(this.currentFace)(() => {
+
                 })
             }
         }
@@ -153,7 +160,10 @@ async function main() {
 }
 
 window.onload = () => {
-    main();
+    setTimeout(() => {
+        main();
+
+    }, 1000)
 }
 
 let eelRunning = false;
