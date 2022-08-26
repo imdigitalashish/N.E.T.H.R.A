@@ -65,14 +65,14 @@ body {
     margin: 0 auto;
     font-size: 4rem;
     padding-top: 40vh;
-    animation: fadeAway 0.4s linear 1.7s 1 forwards;
+    animation: fadeAway 0.5s linear 1.7s 1 forwards;
     color: white;
 }
 
 @keyframes fadeAway {
     100% {
-        opacity: 0;
-        display: none;
+        /* opacity: 0; */
+        padding-top: 7vh;
     }
 }
 
@@ -94,4 +94,10 @@ canvas {
     position: absolute;
     /* z-index: 1; */
     display: none;    
+}
+
+#writerBuffer{
+    position: absolute;
+    bottom: 90px;
+    letter-spacing: 0.4px;
 }

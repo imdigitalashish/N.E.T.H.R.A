@@ -41,11 +41,12 @@ class MainApplication():
         return data
 
     def addThisToCSV(self, adminNumber):
+        data = self.studentsData[adminNumber]
+
         if(adminNumber in self.attendanceRecords.keys()):
-            return
+            return data
         f = open("records/attendancerecords.csv", "a+")
         writer = csv.writer(f)
-        data = self.studentsData[adminNumber]
         t = datetime.now()
         arrived_time = t.strftime('%m/%d/%Y %H:%M:%S')
         data = [randrange(1,90), data["admin_no"], data["class"], data["roll_no"], data["name"], arrived_time]
@@ -55,6 +56,8 @@ class MainApplication():
 
         self.attendanceRecords = self.returnJsonData("records/attendancerecords.csv")
         print(self.attendanceRecords)
+        return data
+        
     
 
 
@@ -64,6 +67,7 @@ eel.init('web')
 
 @eel.expose
 def addThisFaceToCSV(admissionNumber):
-    application.addThisToCSV(admissionNumber)
+    temp = application.addThisToCSV(admissionNumber)
+    return temp
 
 eel.start("index.html", size=screensize)

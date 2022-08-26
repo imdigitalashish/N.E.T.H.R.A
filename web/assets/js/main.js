@@ -18,16 +18,23 @@ class Nethra {
 
     }
 
+    writer(text) {
+        document.querySelector("#writerBuffer").innerHTML = text
+    }
+
     labaledFaceDescriptor = "";
     faceMatcher = "";
     faceDetectorReady = false
 
     async startLabellingModel() {
+        this.writer("Started Labelling")
         this.labaledFaceDescriptor = await this.loadLabledImages();
         this.faceMatcher = new faceapi.FaceMatcher(this.labaledFaceDescriptor, 0.6);
         this.faceDetectorReady = true;
 
         console.log(this.labaledFaceDescriptor);
+        this.writer("Labelling Done.. Starting Camera")
+
     }
 
 
@@ -102,6 +109,11 @@ class Nethra {
         width: 0,
         heigh: 0,
     }
+
+    capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
     async startDetecting() {
         let image = new Image();
         image.src = this.canvas.toDataURL();
@@ -116,14 +128,17 @@ class Nethra {
             this.detectionBox.width = box.width;
             let result = detections.map(d => this.faceMatcher.findBestMatch(d.descriptor));
             result = result.toString().split(" ")[0];
-            if(result.toString() === "unknown") {
+            if (result.toString() === "unknown") {
                 this.currentFace = "";
+                this.writer("UNKOWN PERSON")
             }
             if (result.toString() != "unknown" && this.currentFace != result.toString()) {
                 console.log(result.toString());
                 this.currentFace = result.toString();
-                eel.addThisFaceToCSV(this.currentFace)(() => {
-
+                eel.addThisFaceToCSV(this.currentFace)((res) => {
+                    console.log(res);
+                    let imageChar = `${res.name}  <br> Class: ${res.class} <br> Roll no ${res.roll_no}`
+                    this.writer(this.capitalizeFirstLetter(imageChar))
                 })
             }
         }
@@ -132,10 +147,10 @@ class Nethra {
 
     prepareTheScreen() {
         setTimeout(() => {
-            document.querySelector(".introScreen").style.display = 'none';
+            // document.querySelector(".introScreen").style.display = 'none';
 
             this.canvas.style.display = "flex";
-        }, 3000)
+        }, 3600)
     }
 
 
